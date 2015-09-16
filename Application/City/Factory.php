@@ -4,7 +4,7 @@ namespace Application\City;
 
 class Factory extends \Siht\Factory {
 
-    public function create(\stdClass $object) {
+    public function create( $object) {
         $factory = new City();
         $factory->setName(isset($object->name) ? $object->name : FALSE);
         return $factory;

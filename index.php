@@ -32,6 +32,7 @@ $app->group('/City', function () use ($app) {
     });
 
     $app->post('/', function () use ($app) {
+
         try {
             $request = json_decode($app->request->getBody());
             $controller = new \Application\City\Controller();

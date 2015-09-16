@@ -4,22 +4,44 @@ namespace Application\City;
 
 class Repository extends \Siht\Repository {
 
+    private $pdo;
+
     public function __construct() {
-        
+        if ($this->pdo = new \PDO('sqlite:mysqlitedb.db')) {
+            $sql = "CREATE TABLE city (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(100));";
+            $this->pdo->query($sql);
+        } else {
+            die($sqliteerror);
+        }
     }
 
     public function findAll() {
         $fetchs = array();
+
+        $sql = "SELECT id, name FROM city";
+        $result = $this->pdo->prepare($sql);
+        $result->execute();
+
+        while ($fetch = $result->fetch(\PDO::FETCH_OBJ)) {
+            $city = new City();
+            $city->setId($fetch->id);
+            $city->setName($fetch->name);
+            $fetchs[] = $city;
+        }
+
         return $fetchs;
     }
 
     public function findById($id) {
-        if ($fetch = $this->sql->prepare($sql)->value(":id", $id)->execute()->fetch()) {
+        $sql = "SELECT id, name FROM city WHERE id=:id";
+        $result = $this->pdo->prepare($sql);
+        $result->bindValue(":id", $id, \PDO::PARAM_INT);
+        $result->execute();
+
+        if ($fetch = $result->fetch(\PDO::FETCH_OBJ)) {
             $city = new City();
             $city->setId($fetch->id);
             $city->setName($fetch->name);
-            $city->setEmail($fetch->email);
-            $city->setActive($fetch->active);
             return $city;
         } else {
             return false;
@@ -28,29 +50,33 @@ class Repository extends \Siht\Repository {
 
     public function create(City $city) {
 
-        $id = $this->sql->insert("City")
-                        ->value("name", $city->getName())
-                        ->value("email", $city->getEmail())
-                        ->value("password", $city->getPassword())
-                        ->value("active", $city->getActive())
-                        ->execute()->lastInsertId();
+        $sql = "INSERT INTO city(name) VALUES(:name)";
+        $result = $this->pdo->prepare($sql);
+        $result->bindValue(":name", $city->getName(), \PDO::PARAM_STR);
+        $result->execute();
+
+        $id = $this->pdo->lastInsertId();
+
         return $this->findById($id);
     }
 
     public function update(City $city) {
-        $this->sql->update("City")
-                ->value("name", $city->getName())
-                ->value("email", $city->getEmail())
-                ->valueIf("password", $city->getPassword(), trim($city->getPassword()))
-                ->value("active", $city->getActive())
-                ->where("id", "=", $city->getId())
-                ->execute();
+        $sql = "UPDATE city SET name=:name WHERE id=:id";
+        $result = $this->pdo->prepare($sql);
+        $result->bindValue(":id", $city->getId());
+        $result->bindValue(":name", $city->getName());
+        $result->execute();
 
         return $this->findById($city->getId());
     }
 
     public function remove($id) {
-        return $this->sql->delete()->from("City")->where("id", "=", $id)->execute()->rowCount() == 1;
+        $sql = "DELETE FROM city WHERE id=:id";
+        $result = $this->pdo->prepare($sql);
+        $result->bindValue(":id", $id);
+        $result->execute();
+
+        return $result->rowCount() == 1;
     }
 
 }
