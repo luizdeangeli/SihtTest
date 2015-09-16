@@ -1,0 +1,5 @@
+{
+    "require": {
+        "siht/siht": "dev-master"
+    }
+}
